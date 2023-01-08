@@ -20,8 +20,9 @@ struct location
 };
 struct player
 {
-    string name;
+    char *name;
     int score;
+    long long elapsed_time;
 };
 struct compare
 {
@@ -35,7 +36,11 @@ const int Right = 0;
 const int Left = 1;
 const int Up = 2;
 const int Down = 3;
+mt19937 engine((unsigned int)time(NULL));
+uniform_int_distribution<int> dis(2, 39);
+auto generator = bind(dis, engine);
 const location dir[4] = { {1, 0}, {-1, 0}, {0, -1}, {0, 1} };
+queue<int> rq;
 
 bool isOutOfRange(location here)
 {
@@ -65,12 +70,9 @@ int ReverseDirection(int d)
         return Up;
     }
 }
-int makeRandom(int a, int b)
+int makeRandom(void)
 {
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<int> dis(a, b);
-    return dis(gen);
+    return generator();
 }
 
 class SnakeGame
@@ -79,16 +81,19 @@ private:
     location here;
     int height = 40, weight = 40;
     deque<location> block;
-    int Facing, score;
+    int Facing, score, moveDistance;
 
 public:
     bool isGameOvered;
+    int speed;
     char map[41][41];
     SnakeGame()
     {
         isGameOvered = false;
         score = 0;
-        // Ω√¿€ ¿ßƒ° º±¡§
+        speed = 300;
+        moveDistance = 0;
+        // ÏãúÏûë ÏúÑÏπò ÏÑ†Ï†ï
         here = { 10, 20 };
         block.push_back(here);
         block.push_back({ 9, 20 });
@@ -137,30 +142,66 @@ public:
     {
         location there = DIRtoLOC(here, Facing);
         if (isOutOfRange(there)) return false;
-        if (map[there.y][there.x] != 'A' && map[there.y][there.x] != '.') return false;
+        if (map[there.y][there.x] != 'A' && map[there.y][there.x] != '.' && map[there.y][there.x] != 'B') return false;
         if (map[there.y][there.x] == 'A')
         {
+        	score++;
             block.push_front(there);
             map[there.y][there.x] = 'O';
             map[here.y][here.x] = 'o';
-            write(here.x * 2 - 1, here.y + 1);
-            printf("°‡");
-            write(there.x * 2 - 1, there.y + 1);
-            printf("°·");
+            write(here.x * 2 - 1, here.y);
+            printf("‚ñ°");
+            write(there.x * 2 - 1, there.y);
+            printf("‚ñ†");
 
             location r;
             do
             {
-                r.x = makeRandom(2, 39);
-                r.y = makeRandom(2, 39);
+                r.x = makeRandom();
+                r.y = makeRandom();
             } while (map[r.y][r.x] != '.');
             makeApple(r);
-
-            write(7, 0);
-            printf("%d", ++score);
+            do
+            {
+                r.x = makeRandom();
+                r.y = makeRandom();
+            } while (map[r.y][r.x] != '.');
+            write(r.x*2-1, r.y);
+            SetConsoleTextAttribute(stdHandle, 12);
+           	printf("‚óè");
+           	map[r.y][r.x] = 'B';
+           	SetConsoleTextAttribute(stdHandle, 7);
+            
+            write(120,3);
+            if (speed > 200) speed -= 10;
+            printf("ÌòÑÏû¨ ÏÜçÎèÑ: %dms/block", speed);
+            write(120, 4);
+            printf("ÌòÑÏû¨ Ïä§ÏΩîÏñ¥: %d\n", score);
 
             here = there;
         }
+        else if (map[there.y][there.x] == 'B')
+        {
+        	write(120, 3);
+        	if (speed > 70) speed -= 50;
+        	printf("ÌòÑÏû¨ ÏÜçÎèÑ: %dms/block\n", speed);
+        	block.push_front(there);
+            location removing = block.back();
+            block.pop_back();
+
+            map[there.y][there.x] = 'O';
+            map[here.y][here.x] = 'o';
+            map[removing.y][removing.x] = '.';
+
+            write(removing.x * 2 - 1, removing.y);
+            printf("  ");
+            write(here.x * 2 - 1, here.y);
+            printf("‚ñ°");
+            write(there.x * 2 - 1, there.y);
+            printf("‚ñ†");
+
+            here = there;
+		}
         else
         {
             block.push_front(there);
@@ -171,12 +212,12 @@ public:
             map[here.y][here.x] = 'o';
             map[removing.y][removing.x] = '.';
 
-            write(removing.x * 2 - 1, removing.y + 1);
+            write(removing.x * 2 - 1, removing.y);
             printf("  ");
-            write(here.x * 2 - 1, here.y + 1);
-            printf("°‡");
-            write(there.x * 2 - 1, there.y + 1);
-            printf("°·");
+            write(here.x * 2 - 1, here.y);
+            printf("‚ñ°");
+            write(there.x * 2 - 1, there.y);
+            printf("‚ñ†");
 
             here = there;
         }
@@ -193,33 +234,33 @@ public:
                 {
                     printf("  ");
                 } else if (map[i][j] == 'o'){
-                    printf("°‡");
+                    printf("‚ñ°");
                 } else if (map[i][j] == 'O'){
-                    printf("°·");
+                    printf("‚ñ†");
                 }
                 else if (map[i][j] == '1')
                 {
-                    printf("¶£");
+                    printf("‚îå");
                 }
                 else if (map[i][j] == '2')
                 {
-                    printf("¶§");
+                    printf("‚îê");
                 }
                 else if (map[i][j] == '3')
                 {
-                    printf("¶•");
+                    printf("‚îò");
                 }
                 else if (map[i][j] == '4')
                 {
-                    printf("¶¶");
+                    printf("‚îî");
                 }
                 else if (map[i][j] == '5')
                 {
-                    printf("¶°¶°");
+                    printf("‚îÄ‚îÄ");
                 }
                 else if (map[i][j] == '6')
                 {
-                    printf("¶¢");
+                    printf("‚îÇ");
                 }
             }
             puts("");
@@ -229,9 +270,9 @@ public:
     void makeApple(location A)
     {
         map[A.y][A.x] = 'A';
-        write(A.x * 2 - 1, A.y + 1);
+        write(A.x * 2 - 1, A.y);
         SetConsoleTextAttribute(stdHandle, 6);
-        printf("°⁄");
+        printf("‚òÖ");
         SetConsoleTextAttribute(stdHandle, 7);
     }
 
@@ -239,21 +280,47 @@ public:
     {
         return score;
     }
+    
+    void makeKillTriangle(location A)
+    {
+        map[A.y][A.x] = 'C';
+        write(A.x * 2 - 1, A.y);
+        SetConsoleTextAttribute(stdHandle, 4);
+        printf("‚ñ≤");
+        SetConsoleTextAttribute(stdHandle, 7);
+	}
+    
+    void addDistance()
+    {
+    	moveDistance++;
+    	write(120, 5);
+    	printf("ÌòÑÏû¨ Ïù¥Îèô Í±∞Î¶¨: %d", moveDistance);
+    	if (moveDistance % 30 == 0)
+    	{
+    		location r;
+    		do
+	        {
+	            r.x = makeRandom();
+	            r.y = makeRandom();
+	        } while (map[r.y][r.x] != '.');
+    		makeKillTriangle(r);
+		}
+	}
 };
 
 SnakeGame sk;
+void lobby();
 
 void RotateSnake()
 {
     system("cls");
     system("color 07");
-    puts("SCORE: 0");
     sk.printMap();
     location r;
     do
     {
-        r.x = makeRandom(2, 39);
-        r.y = makeRandom(2, 39);
+        r.x = makeRandom();
+        r.y = makeRandom();
     } while (sk.map[r.y][r.x] != '.');
     sk.makeApple(r);
 
@@ -280,10 +347,12 @@ void RotateSnake()
 
 void MoveSnake()
 {
+	write(120, 7);
     while (!sk.isGameOvered)
     {
         if (!sk.move()) sk.isGameOvered = true;
-        Sleep(200);
+        Sleep(sk.speed);
+        sk.addDistance();
     }
 }
 
@@ -291,6 +360,7 @@ void GameOver()
 {
     system("cls");
     SetConsoleTextAttribute(stdHandle, 4);
+    printf("%d %d %d %d %d %d %d\n", makeRandom(), makeRandom(), makeRandom(), makeRandom(), makeRandom(), makeRandom());
     puts(" _______  _______  __   __  _______    _______  __   __  _______  ______   ");
     puts("|       ||   _   ||  |_|  ||       |  |       ||  | |  ||       ||    _ |  ");
     puts("|    ___||  |_|  ||       ||    ___|  |   _   ||  |_|  ||    ___||   | ||  ");
@@ -301,31 +371,14 @@ void GameOver()
     SetConsoleTextAttribute(stdHandle, 7);
     long long finish_t = clock();
     printf("Your Score: %d\n", sk.getScore());
-    printf("%llds(%lldms) Elapsed!\n", finish_t / 1000, finish_t);
-    puts("================================= RANKING =================================");
-    puts("      RANK                NAME                SCORE");
-    ifstream rf;
-    //priority_queue<player, vector<player>, 
-    int rank = 1;
-    rf.open("ranking.txt");
-    if (rf.is_open())
-    {
-        while (!rf.eof())
-        {
-            char tmp[10];
-            rf.getline(tmp, 10);
-            char* name = strtok(tmp, ",");
-            char* score = strtok(NULL, ",");
-            char* end;
-            printf("      %d                   %s                   %d\n", rank++, name, strtol(score, &end, 10));
-        }
-    }
-    rf.close();
+    puts("Continue?");
+    system("pause");
+    lobby();
 }
 
 void lobby()
 {
-    system("mode con cols=84 lines=50");
+    system("mode con cols=168 lines=42");
     sk = SnakeGame();
     for (int i = 1; i <= 9; i++)
     {
@@ -339,7 +392,7 @@ void lobby()
         Sleep(100);
     }
     system("pause");
-
+	
 
     thread t1(RotateSnake);
     thread t2(MoveSnake);
