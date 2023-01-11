@@ -9,7 +9,12 @@
 #include <deque>
 #include <string>
 #include <stdlib.h>
+/*#include <WinSock2.h>
 
+#pragma comment(lib, "ws2_32");
+
+#define PORT 4578
+#define PACKET_SIZE 1024*/
 
 #define stdHandle GetStdHandle(STD_OUTPUT_HANDLE)
 using namespace std;
@@ -20,7 +25,7 @@ struct location
 };
 struct player
 {
-    char *name;
+    char* name;
     int score;
     long long elapsed_time;
 };
@@ -36,9 +41,13 @@ const int Right = 0;
 const int Left = 1;
 const int Up = 2;
 const int Down = 3;
-mt19937 engine((unsigned int)time(NULL));
+/*mt19937 engine((unsigned int)time(NULL));
 uniform_int_distribution<int> dis(2, 39);
-auto generator = bind(dis, engine);
+auto generator = bind(dis, engine);*/
+
+random_device rd;
+mt19937 mt(rd());
+uniform_int_distribution<int> dis(2, 39);
 const location dir[4] = { {1, 0}, {-1, 0}, {0, -1}, {0, 1} };
 queue<int> rq;
 
@@ -72,7 +81,7 @@ int ReverseDirection(int d)
 }
 int makeRandom(void)
 {
-    return generator();
+    return dis(mt);
 }
 
 class SnakeGame
@@ -145,7 +154,7 @@ public:
         if (map[there.y][there.x] != 'A' && map[there.y][there.x] != '.' && map[there.y][there.x] != 'B') return false;
         if (map[there.y][there.x] == 'A')
         {
-        	score++;
+            score++;
             block.push_front(there);
             map[there.y][there.x] = 'O';
             map[here.y][here.x] = 'o';
@@ -166,13 +175,13 @@ public:
                 r.x = makeRandom();
                 r.y = makeRandom();
             } while (map[r.y][r.x] != '.');
-            write(r.x*2-1, r.y);
+            write(r.x * 2 - 1, r.y);
             SetConsoleTextAttribute(stdHandle, 12);
-           	printf("●");
-           	map[r.y][r.x] = 'B';
-           	SetConsoleTextAttribute(stdHandle, 7);
-            
-            write(120,3);
+            printf("●");
+            map[r.y][r.x] = 'B';
+            SetConsoleTextAttribute(stdHandle, 7);
+
+            write(120, 3);
             if (speed > 200) speed -= 10;
             printf("현재 속도: %dms/block", speed);
             write(120, 4);
@@ -182,10 +191,10 @@ public:
         }
         else if (map[there.y][there.x] == 'B')
         {
-        	write(120, 3);
-        	if (speed > 70) speed -= 50;
-        	printf("현재 속도: %dms/block\n", speed);
-        	block.push_front(there);
+            write(120, 3);
+            if (speed > 70) speed -= 50;
+            printf("현재 속도: %dms/block\n", speed);
+            block.push_front(there);
             location removing = block.back();
             block.pop_back();
 
@@ -201,7 +210,7 @@ public:
             printf("■");
 
             here = there;
-		}
+        }
         else
         {
             block.push_front(there);
@@ -233,9 +242,11 @@ public:
                 if (map[i][j] == '.')
                 {
                     printf("  ");
-                } else if (map[i][j] == 'o'){
+                }
+                else if (map[i][j] == 'o') {
                     printf("□");
-                } else if (map[i][j] == 'O'){
+                }
+                else if (map[i][j] == 'O') {
                     printf("■");
                 }
                 else if (map[i][j] == '1')
@@ -280,7 +291,7 @@ public:
     {
         return score;
     }
-    
+
     void makeKillTriangle(location A)
     {
         map[A.y][A.x] = 'C';
@@ -288,24 +299,24 @@ public:
         SetConsoleTextAttribute(stdHandle, 4);
         printf("▲");
         SetConsoleTextAttribute(stdHandle, 7);
-	}
-    
+    }
+
     void addDistance()
     {
-    	moveDistance++;
-    	write(120, 5);
-    	printf("현재 이동 거리: %d", moveDistance);
-    	if (moveDistance % 30 == 0)
-    	{
-    		location r;
-    		do
-	        {
-	            r.x = makeRandom();
-	            r.y = makeRandom();
-	        } while (map[r.y][r.x] != '.');
-    		makeKillTriangle(r);
-		}
-	}
+        moveDistance++;
+        write(120, 5);
+        printf("현재 이동 거리: %d", moveDistance);
+        if (moveDistance % 30 == 0)
+        {
+            location r;
+            do
+            {
+                r.x = makeRandom();
+                r.y = makeRandom();
+            } while (map[r.y][r.x] != '.');
+            makeKillTriangle(r);
+        }
+    }
 };
 
 SnakeGame sk;
@@ -347,7 +358,7 @@ void RotateSnake()
 
 void MoveSnake()
 {
-	write(120, 7);
+    write(120, 7);
     while (!sk.isGameOvered)
     {
         if (!sk.move()) sk.isGameOvered = true;
@@ -360,7 +371,6 @@ void GameOver()
 {
     system("cls");
     SetConsoleTextAttribute(stdHandle, 4);
-    printf("%d %d %d %d %d %d %d\n", makeRandom(), makeRandom(), makeRandom(), makeRandom(), makeRandom(), makeRandom());
     puts(" _______  _______  __   __  _______    _______  __   __  _______  ______   ");
     puts("|       ||   _   ||  |_|  ||       |  |       ||  | |  ||       ||    _ |  ");
     puts("|    ___||  |_|  ||       ||    ___|  |   _   ||  |_|  ||    ___||   | ||  ");
@@ -380,25 +390,50 @@ void lobby()
 {
     system("mode con cols=168 lines=42");
     sk = SnakeGame();
-    for (int i = 1; i <= 9; i++)
+    puts("Initalizing...");
+    Sleep(1000);
+
+    write(70, 20);
+    printf("> SINGLE PLAYER");
+    write(70, 21);
+    printf("MULTI PLAYER(TCP/IP)");
+
+    bool isSinglePlayer = true;
+    while (!(GetAsyncKeyState(VK_RETURN) & 0x8000))
     {
-        system("cls");
-        char temp[10] = "color 0";
-        temp[7] = i + '0';
-        system(temp);
-
-        printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n                                   Snake Game!\n\n\n");
-        printf("\n\n                                   Game Start!\n");
-        Sleep(100);
+        if ((GetAsyncKeyState(VK_UP) & 0x8000) || (GetAsyncKeyState(VK_DOWN) & 0x8000))
+        {
+            isSinglePlayer = !isSinglePlayer;
+            write(70, 20);
+            printf("                         ");
+            write(70, 21);
+            printf("                         ");
+            if (isSinglePlayer)
+            {
+                write(70, 20);
+                printf("> SINGLE PLAYER");
+                write(70, 21);
+                printf("MULTI PLAYER(TCP/IP)");
+            }
+            else
+            {
+                write(70, 20);
+                printf("SINGLE PLAYER");
+                write(70, 21);
+                printf("> MULTI PLAYER(TCP/IP)");
+            }
+            Sleep(500);
+        }
     }
-    system("pause");
-	
-
-    thread t1(RotateSnake);
-    thread t2(MoveSnake);
-    t1.join();
-    t2.join();
-    GameOver();
+    if (isSinglePlayer)
+    {
+        thread t1(RotateSnake);
+        thread t2(MoveSnake);
+        t1.join();
+        t2.join();
+        GameOver();
+    }
+    
 }
 
 
