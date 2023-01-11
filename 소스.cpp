@@ -23,19 +23,6 @@ struct location
     int x;
     int y;
 };
-struct player
-{
-    char* name;
-    int score;
-    long long elapsed_time;
-};
-struct compare
-{
-    bool operator()(player a, player b)
-    {
-        return a.score < b.score;
-    }
-};
 
 const int Right = 0;
 const int Left = 1;
@@ -88,20 +75,26 @@ class SnakeGame
 {
 private:
     location here;
-    int height = 40, weight = 40;
     deque<location> block;
+    int height = 40, weight = 40;
     int Facing, score, moveDistance;
 
 public:
     bool isGameOvered;
     int speed;
     char map[41][41];
+    
     SnakeGame()
     {
         isGameOvered = false;
         score = 0;
         speed = 300;
         moveDistance = 0;
+        while (!block.empty())
+        {
+            block.pop_back();
+        }
+
         // 시작 위치 선정
         here = { 10, 20 };
         block.push_back(here);
@@ -110,10 +103,9 @@ public:
         block.push_back({ 7, 20 });
         block.push_back({ 6, 20 });
         Facing = Right;
-
-        for (int i = 0; i < height; i++)
+        for (int i = 0; i <= height; i++)
         {
-            for (int j = 0; j < weight; j++)
+            for (int j = 0; j <= weight; j++)
             {
                 map[i][j] = '.';
             }
@@ -133,7 +125,6 @@ public:
             map[0][i] = '5';
             map[40][i] = '5';
         }
-
         for (int i = 1; i < 40; i++)
         {
             map[i][0] = '6';
@@ -317,16 +308,26 @@ public:
             makeKillTriangle(r);
         }
     }
+
+    void printOriginMap()
+    {
+        for (int i = 0; i <= height; i++)
+        {
+            for (int j = 0; j <= weight; j++)
+            {
+                printf("%c", map[i][j]);
+            }
+            puts("");
+        }
+    }
 };
 
 SnakeGame sk;
+unsigned long dw;
 void lobby();
 
 void RotateSnake()
 {
-    system("cls");
-    system("color 07");
-    sk.printMap();
     location r;
     do
     {
@@ -369,7 +370,7 @@ void MoveSnake()
 
 void GameOver()
 {
-    system("cls");
+    FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
     SetConsoleTextAttribute(stdHandle, 4);
     puts(" _______  _______  __   __  _______    _______  __   __  _______  ______   ");
     puts("|       ||   _   ||  |_|  ||       |  |       ||  | |  ||       ||    _ |  ");
@@ -379,7 +380,6 @@ void GameOver()
     puts("|   |_| ||   _   || ||_|| ||   |___   |       | |     | |   |___ |   |  | |");
     puts("|_______||__| |__||_|   |_||_______|  |_______|  |___|  |_______||___|  |_|");
     SetConsoleTextAttribute(stdHandle, 7);
-    long long finish_t = clock();
     printf("Your Score: %d\n", sk.getScore());
     puts("Continue?");
     system("pause");
@@ -388,11 +388,10 @@ void GameOver()
 
 void lobby()
 {
-    system("mode con cols=168 lines=42");
+    FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
     sk = SnakeGame();
     puts("Initalizing...");
     Sleep(1000);
-
     write(70, 20);
     printf("> SINGLE PLAYER");
     write(70, 21);
@@ -425,10 +424,13 @@ void lobby()
             Sleep(500);
         }
     }
+    FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
     if (isSinglePlayer)
     {
         thread t1(RotateSnake);
         thread t2(MoveSnake);
+        write(0, 0);
+        sk.printMap();
         t1.join();
         t2.join();
         GameOver();
@@ -440,5 +442,6 @@ void lobby()
 
 int main(void)
 {
+    system("mode con cols=168 lines=42");
     lobby();
 }
