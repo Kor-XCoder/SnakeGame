@@ -125,6 +125,21 @@ class Snake
 			gotoxy(120, 5);
 			printf("현재 속도: %dms/block", speed);
 		}
+		void GenerateKillTriangle()
+	    {
+	    	location r;
+			do
+			{
+				r.x = makeRandom();
+				r.y = makeRandom();
+			}
+			while (map[r.y][r.x] != '.');
+	        map[r.y][r.x] = 'C';
+	        gotoxy(r.x * 2 - 1, r.y);
+	        SetColor(LightRed);
+	        printf("▲");
+	        SetColor(White);
+	    }
 		
 	public:
 		bool isGameOvered;
@@ -185,6 +200,7 @@ class Snake
 				here = there;
 				
 				GenerateApple();
+				GenerateKillTriangle();
 				addScore(100);
 				addSpeed(10);
 			}
@@ -234,6 +250,7 @@ class Snake
 		}
 };
 Snake player;
+void lobby();
 
 void MoveSnake()
 {
@@ -280,24 +297,112 @@ void GameOver()
     puts("|   ||  ||       ||       ||    ___|  |  |_|  ||       ||    ___||    __  |");
     puts("|   |_| ||   _   || ||_|| ||   |___   |       | |     | |   |___ |   |  | |");
     puts("|_______||__| |__||_|   |_||_______|  |_______|  |___|  |_______||___|  |_|");
+    
     SetColor(White);
     gotoxy(60, 15);
     printf("최종 스코어: ");
     int sc = player.getScore();
+    int WaitingTime = 500;
     for (int i = 0; i <= sc; i++)
     {
     	gotoxy(73, 15);
     	printf("        ");
     	gotoxy(73, 15);
     	printf("%d", i);
-    	int WaitingTime
-    	Sleep();
+    	WaitingTime -= WaitingTime * 0.1;
+    	Sleep(WaitingTime);
 	}
+	
+	gotoxy(0, 9);
+	if (sc < 300)
+	{
+		SetColor(Red);
+		puts("         _______ ");
+		puts("        |       |");
+		puts("        |    ___|");
+		puts("        |   |___ ");
+		puts("        |    ___|");
+		puts("        |   |    ");
+		puts("        |___|    ");
+	}
+	else if (sc < 700)
+	{
+		SetColor(Blue);
+		puts("         _______ ");
+		puts("        |       |");
+		puts("        |    ___|");
+		puts("        |   |    ");
+		puts("        |   |___ ");
+		puts("        |       |");
+		puts("        |_______|");
+	}
+	else if (sc < 2000)
+	{
+		SetColor(BlueGreen);
+		puts("         _______ ");
+		puts("        |  _    |");
+		puts("        | |_|   |");
+		puts("        |      _|");
+		puts("        |  _  |_ ");
+		puts("        | |_|   |");
+		puts("        |_______|");
+	}
+	else if (sc < 3000)
+	{
+		SetColor(Green);
+		puts("         _______ ");
+		puts("        |   _   |");
+		puts("        |  | |  |");
+		puts("        |  |_|  |");
+		puts("        |       |");
+		puts("        |   _   |");
+		puts("        |__| |__|");
+	}
+	else if (sc < 5000)
+	{
+		SetColor(LightGreen);
+		puts("         _______    _    ");
+		puts("        |   _   | _| |_  ");
+		puts("        |  | |  ||_   _| ");
+		puts("        |  |_|  |  |_|   ");
+		puts("        |       |");
+		puts("        |   _   |");
+		puts("        |__| |__|");
+	}
+	else if (sc < 10000)
+	{
+		SetColor(Yellow);
+		puts("         _______ ");
+		puts("        |       |");
+		puts("        |  _____|");
+		puts("        | |_____ ");
+		puts("        |_____  |");
+		puts("         _____| |");
+		puts("        |_______|");
+	}
+	else
+	{
+		SetColor(LightYellow);
+		puts("         _______    _    ");
+		puts("        |       | _| |_  ");
+		puts("        |  _____||_   _| ");
+		puts("        | |_____   |_|    ");
+		puts("        |_____  |");
+		puts("         _____| |");
+		puts("        |_______|");
+	}
+	SetColor(White);
+	
+	
+	gotoxy(0, 17);
+	system("pause");
+	lobby();
 }
 
 void lobby()
 {
 	FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
+	gotoxy(0, 0);
     puts("Initalizing...");
     Sleep(1000);
     gotoxy(70, 20);
