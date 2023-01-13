@@ -36,9 +36,12 @@ const int LightWhite = 15;
 const location dir[4] = { {1, 0}, {-1, 0}, {0, -1}, {0, 1} };
 unsigned long dw;
 
-random_device rd;
-mt19937 mt(rd());
-uniform_int_distribution<int> dis(1, 39);
+//random_device rd;
+//mt19937 mt(rd());
+//uniform_int_distribution<int> dis(1, 39);
+mt19937 engine((unsigned int)time(NULL));        
+uniform_int_distribution<int> distribution(1, 39);
+auto generator = bind(distribution, engine);
 
 bool isOutOfRange(location here)
 {
@@ -70,31 +73,31 @@ int ReverseDirection(int d)
 }
 int makeRandom()
 {
-    return dis(mt);
+    return generator();
 }
 void RenderBorder()
 {
-	gotoxy(0, 0); printf("¶£");
-	gotoxy(40*2-1, 0); printf("¶§");
-	gotoxy(40*2-1, 40); printf("¶•");
-	gotoxy(0, 40); printf("¶¶");
+	gotoxy(0, 0); printf("┌");
+	gotoxy(40*2-1, 0); printf("┐");
+	gotoxy(40*2-1, 40); printf("┘");
+	gotoxy(0, 40); printf("└");
 	
 	for (int i = 1; i < 40; i++)
 	{
-		gotoxy(i*2-1, 0); printf("¶°¶°");
-		gotoxy(i*2-1, 40); printf("¶°¶°");
-		gotoxy(0, i); printf("¶¢");
-		gotoxy(40*2-1, i); printf("¶¢");
+		gotoxy(i*2-1, 0); printf("──");
+		gotoxy(i*2-1, 40); printf("──");
+		gotoxy(0, i); printf("│");
+		gotoxy(40*2-1, i); printf("│");
 	}
 	puts("");
 }
 void RenderFirstSnake()
 {
-    gotoxy(10*2-1, 20); printf("°·");
+    gotoxy(10*2-1, 20); printf("■");
     for (int i = 6; i <= 9; i++)
     {
     	gotoxy(i*2-1, 20);
-    	printf("°‡");
+    	printf("□");
 	}
 }
 void SetColor(int col)
@@ -105,9 +108,23 @@ class Snake
 {
 	private:
 		location here;
-		int Facing, score, speed, moveDistance;
+		int Facing, score, speed;
 		char map[40][40];
 		deque<location> block;
+		
+		void addScore(int sc)
+		{
+			score += sc;
+			gotoxy(120, 4);
+			printf("현재 스코어: %d점", score);
+		}
+		void addSpeed(int sp)
+		{
+			if (speed - sp < 30) return;
+			speed -= sp;
+			gotoxy(120, 5);
+			printf("현재 속도: %dms/block", speed);
+		}
 		
 	public:
 		bool isGameOvered;
@@ -116,7 +133,6 @@ class Snake
 			isGameOvered = false;
 	        score = 0;
 	        speed = 300;
-	        moveDistance = 0;
 	        while (!block.empty()) // deque init
 	        {
 	            block.pop_back();
@@ -143,21 +159,7 @@ class Snake
 	        map[20][7] = 'o';
 	        map[20][6] = 'o';
 		}
-		void GenerateApple(void)
-		{
-			location r;
-			do
-			{
-				r.x = makeRandom();
-				r.y = makeRandom();
-			}
-			while (map[r.y][r.x] != '.');
-			map[r.y][r.x] = 'A';
-			gotoxy(r.x*2-1, r.y);
-			SetColor(Yellow);
-			printf("°⁄");
-			SetColor(White);
-		}
+		
 		void setFacing(int going)
 		{
 			if (ReverseDirection(Facing) == going) return;
@@ -168,7 +170,7 @@ class Snake
 			location there = DIRtoLOC(here, Facing);
 			if (isOutOfRange(there)) return false;
 			if (map[there.y][there.x] != '.' && map[there.y][there.x] != 'A') return false;
-			
+			addScore(1);
 			if (map[there.y][there.x] == 'A')
 			{
 				block.push_front(there);
@@ -177,12 +179,14 @@ class Snake
 				map[there.y][there.x] = 'O';
 				
 				gotoxy(here.x*2-1, here.y);
-				printf("°‡");
+				printf("□");
 				gotoxy(there.x*2-1, there.y);
-				printf("°·");
+				printf("■");
 				here = there;
 				
 				GenerateApple();
+				addScore(100);
+				addSpeed(10);
 			}
 			else
 			{
@@ -197,9 +201,9 @@ class Snake
 				gotoxy(removing.x*2-1, removing.y);
 				printf("  ");
 				gotoxy(here.x*2-1, here.y);
-				printf("°‡");
+				printf("□");
 				gotoxy(there.x*2-1, there.y);
-				printf("°·");
+				printf("■");
 				here = there;
 			}
 			
@@ -208,6 +212,25 @@ class Snake
 		int getSpeed()
 		{
 			return speed;
+		}
+		int getScore()
+		{
+			return score;
+		}
+		void GenerateApple(void)
+		{
+			location r;
+			do
+			{
+				r.x = makeRandom();
+				r.y = makeRandom();
+			}
+			while (map[r.y][r.x] != '.');
+			map[r.y][r.x] = 'A';
+			gotoxy(r.x*2-1, r.y);
+			SetColor(Yellow);
+			printf("★");
+			SetColor(White);
 		}
 };
 Snake player;
@@ -242,6 +265,33 @@ void RotateSnake()
 		{
 			player.setFacing(Down);
 		}
+	}
+}
+
+void GameOver()
+{
+	FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
+	gotoxy(0, 0);
+	SetColor(Red);
+	puts(" _______  _______  __   __  _______    _______  __   __  _______  ______   ");
+    puts("|       ||   _   ||  |_|  ||       |  |       ||  | |  ||       ||    _ |  ");
+    puts("|    ___||  |_|  ||       ||    ___|  |   _   ||  |_|  ||    ___||   | ||  ");
+    puts("|   | __ |       ||       ||   |___   |  | |  ||       ||   |___ |   |_||_ ");
+    puts("|   ||  ||       ||       ||    ___|  |  |_|  ||       ||    ___||    __  |");
+    puts("|   |_| ||   _   || ||_|| ||   |___   |       | |     | |   |___ |   |  | |");
+    puts("|_______||__| |__||_|   |_||_______|  |_______|  |___|  |_______||___|  |_|");
+    SetColor(White);
+    gotoxy(60, 15);
+    printf("최종 스코어: ");
+    int sc = player.getScore();
+    for (int i = 0; i <= sc; i++)
+    {
+    	gotoxy(73, 15);
+    	printf("        ");
+    	gotoxy(73, 15);
+    	printf("%d", i);
+    	int WaitingTime
+    	Sleep();
 	}
 }
 
@@ -293,7 +343,7 @@ void lobby()
         
         t1.join();
         t2.join();
-        //GameOver();
+        GameOver();
     }
     
 }
@@ -301,8 +351,8 @@ void lobby()
 int main(void)
 {
 	CONSOLE_CURSOR_INFO cursorInfo = { 0, };
-    cursorInfo.dwSize = 1; //ƒøº≠ ±Ω±‚ (1 ~ 100)
-    cursorInfo.bVisible = FALSE; //ƒøº≠ Visible TRUE(∫∏¿”) FALSE(º˚±Ë)
+    cursorInfo.dwSize = 1;
+    cursorInfo.bVisible = FALSE;
     SetConsoleCursorInfo(stdHandle, &cursorInfo);
 	system("mode con cols=168 lines=43");
 	lobby();
