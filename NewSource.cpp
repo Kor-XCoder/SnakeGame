@@ -1,14 +1,9 @@
 #include <cstdio>
-#include <conio.h>
-#include <winsock2.h>
 #include <windows.h>
-#include <string.h>
 #include <random>
 #include <deque>
 #include <thread>
 
-#pragma comment(lib, "ws2_32.lib")
-#define BUFSIZE 1024
 #define stdHandle GetStdHandle(STD_OUTPUT_HANDLE)
 using namespace std;
 
@@ -49,26 +44,6 @@ mt19937 engine((unsigned int)time(NULL));
 uniform_int_distribution<int> distribution(1, 39);
 auto generator = bind(distribution, engine);
 
-void ErrorHandle(char *m)
-{
-	WSACleanup();
-	fputs(m, stderr);
-	fputc('\n', stderr);
-	_getch();
-	exit(1);
-}
-
-/*void MakeServer()
-{
-	WSADATA wsaData;
-	SOCKET servSock, clntSock;
-	SOCKADDR_IN servAddr, clntAddr;
-	
-	char message[BUFSIZE];
-	int strLen, fromLen, nRcv;
-	
-	if 
-}*/
 bool isOutOfRange(location here)
 {
     return (here.x <= 0 || here.y <= 0 || here.x > 39 || here.y > 39);
