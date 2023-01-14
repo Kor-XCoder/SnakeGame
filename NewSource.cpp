@@ -409,49 +409,21 @@ void lobby()
     Sleep(1000);
     gotoxy(70, 20);
     printf("> SINGLE PLAYER");
-    gotoxy(70, 21);
-    printf("MULTI PLAYER(TCP/IP)");
 
-    bool isSinglePlayer = true;
     while (!(GetAsyncKeyState(VK_RETURN) & 0x8000))
     {
-        if ((GetAsyncKeyState(VK_UP) & 0x8000) || (GetAsyncKeyState(VK_DOWN) & 0x8000))
-        {
-            isSinglePlayer = !isSinglePlayer;
-            gotoxy(70, 20);
-            printf("                         ");
-            gotoxy(70, 21);
-            printf("                         ");
-            if (isSinglePlayer)
-            {
-                gotoxy(70, 20);
-                printf("> SINGLE PLAYER");
-                gotoxy(70, 21);
-                printf("MULTI PLAYER(TCP/IP)");
-            }
-            else
-            {
-                gotoxy(70, 20);
-                printf("SINGLE PLAYER");
-                gotoxy(70, 21);
-                printf("> MULTI PLAYER(TCP/IP)");
-            }
-            Sleep(300);
-        }
+        
     }
     FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
-    if (isSinglePlayer)
-    {
-        player = Snake();
-        RenderBorder();
-        RenderFirstSnake();
-        thread t1(RotateSnake);
-        thread t2(MoveSnake);
-        
-        t1.join();
-        t2.join();
-        GameOver();
-    }
+    player = Snake();
+    RenderBorder();
+    RenderFirstSnake();
+    thread t1(RotateSnake);
+    thread t2(MoveSnake);
+
+    t1.join();
+    t2.join();
+    GameOver();
     
 }
 
