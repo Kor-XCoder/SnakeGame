@@ -40,7 +40,7 @@ unsigned long dw;
 //random_device rd;
 //mt19937 mt(rd());
 //uniform_int_distribution<int> dis(1, 39);
-mt19937 engine((unsigned int)time(NULL));        
+mt19937 engine((unsigned int)time(NULL));
 uniform_int_distribution<int> distribution(1, 39);
 auto generator = bind(distribution, engine);
 
@@ -78,221 +78,221 @@ int makeRandom()
 }
 void RenderBorder()
 {
-	gotoxy(0, 0); printf("┌");
-	gotoxy(40*2-1, 0); printf("┐");
-	gotoxy(40*2-1, 40); printf("┘");
-	gotoxy(0, 40); printf("└");
-	
-	for (int i = 1; i < 40; i++)
-	{
-		gotoxy(i*2-1, 0); printf("──");
-		gotoxy(i*2-1, 40); printf("──");
-		gotoxy(0, i); printf("│");
-		gotoxy(40*2-1, i); printf("│");
-	}
-	puts("");
+    gotoxy(0, 0); printf("┌");
+    gotoxy(40*2-1, 0); printf("┐");
+    gotoxy(40*2-1, 40); printf("┘");
+    gotoxy(0, 40); printf("└");
+    
+    for (int i = 1; i < 40; i++)
+    {
+        gotoxy(i*2-1, 0); printf("──");
+        gotoxy(i*2-1, 40); printf("──");
+        gotoxy(0, i); printf("│");
+        gotoxy(40*2-1, i); printf("│");
+    }
+    puts("");
 }
 void RenderFirstSnake()
 {
     gotoxy(10*2-1, 20); printf("■");
     for (int i = 6; i <= 9; i++)
     {
-    	gotoxy(i*2-1, 20);
-    	printf("□");
-	}
+        gotoxy(i*2-1, 20);
+        printf("□");
+    }
 }
 void SetColor(int col)
 {
-	SetConsoleTextAttribute(stdHandle, col);
+    SetConsoleTextAttribute(stdHandle, col);
 }
 
 class Snake
 {
-	private:
-		location here;
-		int Facing, score, speed;
-		char map[40][40];
-		deque<location> block;
-		
-		void addScore(int sc)
-		{
-			score += sc;
-			gotoxy(120, 4);
-			printf("현재 스코어: %d점", score);
-		}
-		void addSpeed(int sp)
-		{
-			if (speed - sp < 30) return;
-			speed -= sp;
-			gotoxy(120, 5);
-			printf("현재 속도: %dms/block", speed);
-		}
-		void GenerateKillTriangle()
-	    {
-	    	location r;
-			do
-			{
-				r.x = makeRandom();
-				r.y = makeRandom();
-			}
-			while (map[r.y][r.x] != '.');
-	        map[r.y][r.x] = 'C';
-	        gotoxy(r.x * 2 - 1, r.y);
-	        SetColor(LightRed);
-	        printf("▲");
-	        SetColor(White);
-	    }
-		
-	public:
-		bool isGameOvered;
-		Snake()
-		{
-			isGameOvered = false;
-	        score = 0;
-	        speed = 300;
-	        while (!block.empty()) // deque init
-	        {
-	            block.pop_back();
-	        }
-			for (int i = 1; i < 40; i++) // map init
-			{
-				for (int j = 1; j < 40; j++)
-				{
-					map[i][j] = '.';
-				}
-			}
-			
-			here = { 10, 20 };
-	        block.push_back(here);
-	        block.push_back({ 9, 20 });
-	        block.push_back({ 8, 20 });
-	        block.push_back({ 7, 20 });
-	        block.push_back({ 6, 20 });
-	        Facing = Right;
-	        
-	        map[20][10] = 'O';
-	        map[20][9] = 'o';
-	        map[20][8] = 'o';
-	        map[20][7] = 'o';
-	        map[20][6] = 'o';
-		}
-		
-		void setFacing(int going)
-		{
-			if (ReverseDirection(Facing) == going) return;
-        	Facing = going;
-		}
-		bool Move()
-		{
-			location there = DIRtoLOC(here, Facing);
-			if (isOutOfRange(there)) return false;
-			if (map[there.y][there.x] != '.' && map[there.y][there.x] != 'A') return false;
-			addScore(1);
-			if (map[there.y][there.x] == 'A')
-			{
-				block.push_front(there);
-				
-				map[here.y][here.x] = 'o';
-				map[there.y][there.x] = 'O';
-				
-				gotoxy(here.x*2-1, here.y);
-				printf("□");
-				gotoxy(there.x*2-1, there.y);
-				printf("■");
-				here = there;
-				
-				GenerateApple();
-				GenerateKillTriangle();
-				addScore(100);
-				addSpeed(10);
-			}
-			else
-			{
-				location removing = block.back();
-				block.pop_back();
-				block.push_front(there);
-				
-				map[removing.y][removing.x] = '.';
-				map[here.y][here.x] = 'o';
-				map[there.y][there.x] = 'O';
-				
-				gotoxy(removing.x*2-1, removing.y);
-				printf("  ");
-				gotoxy(here.x*2-1, here.y);
-				printf("□");
-				gotoxy(there.x*2-1, there.y);
-				printf("■");
-				here = there;
-			}
-			
-			return true;
-		}
-		int getSpeed()
-		{
-			return speed;
-		}
-		int getScore()
-		{
-			return score;
-		}
-		void GenerateApple(void)
-		{
-			location r;
-			do
-			{
-				r.x = makeRandom();
-				r.y = makeRandom();
-			}
-			while (map[r.y][r.x] != '.');
-			map[r.y][r.x] = 'A';
-			gotoxy(r.x*2-1, r.y);
-			SetColor(Yellow);
-			printf("★");
-			SetColor(White);
-		}
+    private:
+        location here;
+        int Facing, score, speed;
+        char map[40][40];
+        deque<location> block;
+        
+        void addScore(int sc)
+        {
+            score += sc;
+            gotoxy(120, 4);
+            printf("현재 스코어: %d점", score);
+        }
+        void addSpeed(int sp)
+        {
+            if (speed - sp < 30) return;
+            speed -= sp;
+            gotoxy(120, 5);
+            printf("현재 속도: %dms/block", speed);
+        }
+        void GenerateKillTriangle()
+        {
+            location r;
+            do
+            {
+                r.x = makeRandom();
+                r.y = makeRandom();
+            }
+            while (map[r.y][r.x] != '.');
+            map[r.y][r.x] = 'C';
+            gotoxy(r.x * 2 - 1, r.y);
+            SetColor(LightRed);
+            printf("▲");
+            SetColor(White);
+        }
+        
+    public:
+        bool isGameOvered;
+        Snake()
+        {
+            isGameOvered = false;
+            score = 0;
+            speed = 300;
+            while (!block.empty()) // deque init
+            {
+                block.pop_back();
+            }
+            for (int i = 1; i < 40; i++) // map init
+            {
+                for (int j = 1; j < 40; j++)
+                {
+                    map[i][j] = '.';
+                }
+            }
+            
+            here = { 10, 20 };
+            block.push_back(here);
+            block.push_back({ 9, 20 });
+            block.push_back({ 8, 20 });
+            block.push_back({ 7, 20 });
+            block.push_back({ 6, 20 });
+            Facing = Right;
+            
+            map[20][10] = 'O';
+            map[20][9] = 'o';
+            map[20][8] = 'o';
+            map[20][7] = 'o';
+            map[20][6] = 'o';
+        }
+        
+        void setFacing(int going)
+        {
+            if (ReverseDirection(Facing) == going) return;
+            Facing = going;
+        }
+        bool Move()
+        {
+            location there = DIRtoLOC(here, Facing);
+            if (isOutOfRange(there)) return false;
+            if (map[there.y][there.x] != '.' && map[there.y][there.x] != 'A') return false;
+            addScore(1);
+            if (map[there.y][there.x] == 'A')
+            {
+                block.push_front(there);
+                
+                map[here.y][here.x] = 'o';
+                map[there.y][there.x] = 'O';
+                
+                gotoxy(here.x*2-1, here.y);
+                printf("□");
+                gotoxy(there.x*2-1, there.y);
+                printf("■");
+                here = there;
+                
+                GenerateApple();
+                GenerateKillTriangle();
+                addScore(100);
+                addSpeed(10);
+            }
+            else
+            {
+                location removing = block.back();
+                block.pop_back();
+                block.push_front(there);
+                
+                map[removing.y][removing.x] = '.';
+                map[here.y][here.x] = 'o';
+                map[there.y][there.x] = 'O';
+                
+                gotoxy(removing.x*2-1, removing.y);
+                printf("  ");
+                gotoxy(here.x*2-1, here.y);
+                printf("□");
+                gotoxy(there.x*2-1, there.y);
+                printf("■");
+                here = there;
+            }
+            
+            return true;
+        }
+        int getSpeed()
+        {
+            return speed;
+        }
+        int getScore()
+        {
+            return score;
+        }
+        void GenerateApple(void)
+        {
+            location r;
+            do
+            {
+                r.x = makeRandom();
+                r.y = makeRandom();
+            }
+            while (map[r.y][r.x] != '.');
+            map[r.y][r.x] = 'A';
+            gotoxy(r.x*2-1, r.y);
+            SetColor(Yellow);
+            printf("★");
+            SetColor(White);
+        }
 };
 Snake player;
 void lobby();
 
 void MoveSnake()
 {
-	player.GenerateApple();
-	while (!player.isGameOvered)
-	{
-		player.isGameOvered = !player.Move();
-		Sleep(player.getSpeed());
-	}
+    player.GenerateApple();
+    while (!player.isGameOvered)
+    {
+        player.isGameOvered = !player.Move();
+        Sleep(player.getSpeed());
+    }
 }
 
 void RotateSnake()
 {
-	while (!player.isGameOvered)
-	{
-		if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
-		{
-			player.setFacing(Right);
-		}
-		else if (GetAsyncKeyState(VK_LEFT) & 0x8000)
-		{
-			player.setFacing(Left);
-		}
-		else if (GetAsyncKeyState(VK_UP) & 0x8000)
-		{
-			player.setFacing(Up);
-		}
-		else if (GetAsyncKeyState(VK_DOWN) & 0x8000)
-		{
-			player.setFacing(Down);
-		}
-	}
+    while (!player.isGameOvered)
+    {
+        if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+        {
+            player.setFacing(Right);
+        }
+        else if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+        {
+            player.setFacing(Left);
+        }
+        else if (GetAsyncKeyState(VK_UP) & 0x8000)
+        {
+            player.setFacing(Up);
+        }
+        else if (GetAsyncKeyState(VK_DOWN) & 0x8000)
+        {
+            player.setFacing(Down);
+        }
+    }
 }
 
 void GameOver()
 {
-	FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
-	gotoxy(0, 0);
-	SetColor(Red);
-	puts(" _______  _______  __   __  _______    _______  __   __  _______  ______   ");
+    FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
+    gotoxy(0, 0);
+    SetColor(Red);
+    puts(" _______  _______  __   __  _______    _______  __   __  _______  ______   ");
     puts("|       ||   _   ||  |_|  ||       |  |       ||  | |  ||       ||    _ |  ");
     puts("|    ___||  |_|  ||       ||    ___|  |   _   ||  |_|  ||    ___||   | ||  ");
     puts("|   | __ |       ||       ||   |___   |  | |  ||       ||   |___ |   |_||_ ");
@@ -307,104 +307,104 @@ void GameOver()
     int WaitingTime = 500;
     for (int i = 0; i <= sc; i++)
     {
-    	gotoxy(73, 15);
-    	printf("        ");
-    	gotoxy(73, 15);
-    	printf("%d", i);
-    	WaitingTime -= WaitingTime * 0.1;
-    	Sleep(WaitingTime);
-	}
-	
-	gotoxy(0, 9);
-	if (sc < 300)
-	{
-		SetColor(Red);
-		puts("         _______ ");
-		puts("        |       |");
-		puts("        |    ___|");
-		puts("        |   |___ ");
-		puts("        |    ___|");
-		puts("        |   |    ");
-		puts("        |___|    ");
-	}
-	else if (sc < 700)
-	{
-		SetColor(Blue);
-		puts("         _______ ");
-		puts("        |       |");
-		puts("        |    ___|");
-		puts("        |   |    ");
-		puts("        |   |___ ");
-		puts("        |       |");
-		puts("        |_______|");
-	}
-	else if (sc < 2000)
-	{
-		SetColor(BlueGreen);
-		puts("         _______ ");
-		puts("        |  _    |");
-		puts("        | |_|   |");
-		puts("        |      _|");
-		puts("        |  _  |_ ");
-		puts("        | |_|   |");
-		puts("        |_______|");
-	}
-	else if (sc < 3000)
-	{
-		SetColor(Green);
-		puts("         _______ ");
-		puts("        |   _   |");
-		puts("        |  | |  |");
-		puts("        |  |_|  |");
-		puts("        |       |");
-		puts("        |   _   |");
-		puts("        |__| |__|");
-	}
-	else if (sc < 5000)
-	{
-		SetColor(LightGreen);
-		puts("         _______    _    ");
-		puts("        |   _   | _| |_  ");
-		puts("        |  | |  ||_   _| ");
-		puts("        |  |_|  |  |_|   ");
-		puts("        |       |");
-		puts("        |   _   |");
-		puts("        |__| |__|");
-	}
-	else if (sc < 10000)
-	{
-		SetColor(Yellow);
-		puts("         _______ ");
-		puts("        |       |");
-		puts("        |  _____|");
-		puts("        | |_____ ");
-		puts("        |_____  |");
-		puts("         _____| |");
-		puts("        |_______|");
-	}
-	else
-	{
-		SetColor(LightYellow);
-		puts("         _______    _    ");
-		puts("        |       | _| |_  ");
-		puts("        |  _____||_   _| ");
-		puts("        | |_____   |_|    ");
-		puts("        |_____  |");
-		puts("         _____| |");
-		puts("        |_______|");
-	}
-	SetColor(White);
-	
-	
-	gotoxy(0, 17);
-	system("pause");
-	lobby();
+        gotoxy(73, 15);
+        printf("        ");
+        gotoxy(73, 15);
+        printf("%d", i);
+        WaitingTime -= WaitingTime * 0.1;
+        Sleep(WaitingTime);
+    }
+    
+    gotoxy(0, 9);
+    if (sc < 300)
+    {
+        SetColor(Red);
+        puts("         _______ ");
+        puts("        |       |");
+        puts("        |    ___|");
+        puts("        |   |___ ");
+        puts("        |    ___|");
+        puts("        |   |    ");
+        puts("        |___|    ");
+    }
+    else if (sc < 700)
+    {
+        SetColor(Blue);
+        puts("         _______ ");
+        puts("        |       |");
+        puts("        |    ___|");
+        puts("        |   |    ");
+        puts("        |   |___ ");
+        puts("        |       |");
+        puts("        |_______|");
+    }
+    else if (sc < 2000)
+    {
+        SetColor(BlueGreen);
+        puts("         _______ ");
+        puts("        |  _    |");
+        puts("        | |_|   |");
+        puts("        |      _|");
+        puts("        |  _  |_ ");
+        puts("        | |_|   |");
+        puts("        |_______|");
+    }
+    else if (sc < 3000)
+    {
+        SetColor(Green);
+        puts("         _______ ");
+        puts("        |   _   |");
+        puts("        |  | |  |");
+        puts("        |  |_|  |");
+        puts("        |       |");
+        puts("        |   _   |");
+        puts("        |__| |__|");
+    }
+    else if (sc < 5000)
+    {
+        SetColor(LightGreen);
+        puts("         _______    _    ");
+        puts("        |   _   | _| |_  ");
+        puts("        |  | |  ||_   _| ");
+        puts("        |  |_|  |  |_|   ");
+        puts("        |       |");
+        puts("        |   _   |");
+        puts("        |__| |__|");
+    }
+    else if (sc < 10000)
+    {
+        SetColor(Yellow);
+        puts("         _______ ");
+        puts("        |       |");
+        puts("        |  _____|");
+        puts("        | |_____ ");
+        puts("        |_____  |");
+        puts("         _____| |");
+        puts("        |_______|");
+    }
+    else
+    {
+        SetColor(LightYellow);
+        puts("         _______    _    ");
+        puts("        |       | _| |_  ");
+        puts("        |  _____||_   _| ");
+        puts("        | |_____   |_|    ");
+        puts("        |_____  |");
+        puts("         _____| |");
+        puts("        |_______|");
+    }
+    SetColor(White);
+    
+    
+    gotoxy(0, 17);
+    system("pause");
+    lobby();
 }
 
 void lobby()
 {
-	FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
-	gotoxy(0, 0);
+    FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
+    gotoxy(0, 0);
     puts("Initalizing...");
     Sleep(1000);
     gotoxy(70, 20);
@@ -442,9 +442,9 @@ void lobby()
     FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
     if (isSinglePlayer)
     {
-    	player = Snake();
-    	RenderBorder();
-    	RenderFirstSnake();
+        player = Snake();
+        RenderBorder();
+        RenderFirstSnake();
         thread t1(RotateSnake);
         thread t2(MoveSnake);
         
@@ -457,10 +457,10 @@ void lobby()
 
 int main(void)
 {
-	CONSOLE_CURSOR_INFO cursorInfo = { 0, };
+    CONSOLE_CURSOR_INFO cursorInfo = { 0, };
     cursorInfo.dwSize = 1;
     cursorInfo.bVisible = 0;
     SetConsoleCursorInfo(stdHandle, &cursorInfo);
-	system("mode con cols=168 lines=43");
-	lobby();
+    system("mode con cols=168 lines=43");
+    lobby();
 }
