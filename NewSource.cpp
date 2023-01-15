@@ -149,7 +149,7 @@ class Snake
         {
             isGameOvered = false;
             score = 0;
-            speed = 300;
+            speed = 250;
             while (!block.empty()) // deque init
             {
                 block.pop_back();
@@ -404,9 +404,15 @@ void GameOver()
 void lobby()
 {
     FillConsoleOutputCharacter(stdHandle, ' ', 300 * 300, { 0, 0 }, &dw);
-    gotoxy(0, 0);
-    puts("Initalizing...");
-    Sleep(1000);
+    gotoxy(50, 3);
+    SetColor(Green);
+    puts("   _____             __           ______                   ");
+    gotoxy(50, 4);puts("  / ___/____  ____ _/ /_____     / ____/___ _____ ___  ___ ");
+    gotoxy(50, 5);puts("  \\__ \\/ __ \\/ __ `/ //_/ _ \\   / / __/ __ `/ __ `__ \\/ _ \\");
+    gotoxy(50, 6);puts(" ___/ / / / / /_/ / ,< /  __/  / /_/ / /_/ / / / / / /  __/");
+    gotoxy(50, 7);puts("/____/_/ /_/\\__,_/_/|_|\\___/   \\____/\\__,_/_/ /_/ /_/\\___/ ");
+    
+	SetColor(White);
     gotoxy(70, 20);
     printf("> SINGLE PLAYER");
 
@@ -418,6 +424,8 @@ void lobby()
     player = Snake();
     RenderBorder();
     RenderFirstSnake();
+    gotoxy(120, 5);
+    printf("현재 속도: 250ms/block");
     thread t1(RotateSnake);
     thread t2(MoveSnake);
 
