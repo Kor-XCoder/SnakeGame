@@ -32,7 +32,11 @@ When GAMEOVER, There will be current score and rank.
 
 ## Used Header File
 cstdio	
+
 thread : to handle Input Latency
+
 windows.h : to print screen
+
 deque: to handle snake's position
+
 random: to use random numbers(MT19937)
